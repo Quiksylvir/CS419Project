@@ -63,7 +63,7 @@ public class Simulator {
         System.out.println("\n\nSimulation START!");
         Kernel Kernel = new Kernel(Algo, quantum);
         Simulator Sim = new Simulator(Kernel, universalWorkload);Sim.run();
-        System.out.println("Average wait time: " + getAverageWaitTime(arrivalTimes, Kernel.getStartTimes()));
+        System.out.println("Average wait time: " + getAverageWaitTime(arrivalTimes, Kernel.getStartTimes(), quantum, Kernel.getTimesPreempted()));
         System.out.println("Simulation END!\n\n");
     }
 
@@ -74,13 +74,14 @@ public class Simulator {
         }
     }
 
-    private static double getAverageWaitTime(Map<Integer, Integer> arrivalTimes, Map<Integer, Integer> startTimes) {
+    private static double getAverageWaitTime(Map<Integer, Integer> arrivalTimes, Map<Integer, Integer> startTimes, int quantum, Map<Integer, Integer> timesPreempted) {
         double runningTotal = 0;
         System.out.println("Arrives: " + arrivalTimes);
         System.out.println("Starts: " + startTimes);
-
+        System.out.println("Pre-empts: " + timesPreempted);
         for (int x = 1; x <= arrivalTimes.size();x++) {
-            runningTotal += startTimes.get(x) - arrivalTimes.get(x);
+            timesPreempted.putIfAbsent(x, 0);
+            runningTotal += startTimes.get(x) - arrivalTimes.get(x) - (timesPreempted.get(x) * quantum);
         }
         return runningTotal / arrivalTimes.size();
     }

@@ -8,7 +8,6 @@ public class Process {
 
     public final int pid;
     public final int arrivalTime;
-
     public State state = State.NEW;
     public final List<Instruction> code;
     public int programCounter = 0;
