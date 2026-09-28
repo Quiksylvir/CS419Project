@@ -1,8 +1,5 @@
 package minios;
 
-import java.util.ArrayList;
-import java.util.List;
-
 public class MMU {
 
     private final int TOTAL_MEMORY;
@@ -20,23 +17,29 @@ public class MMU {
         }
     }
 
+    //returns true if allocation was successful and false if it was not
     public boolean getMemoryBlock(int requestedMemorySize, int pid) {
-        int positionTracker = 0;
-        int sizeCounter = 0;
+        int startIndexTracker = 0;
+        int contiguousSizeLocated = 0;
 
-        for (int x = 0; x < TOTAL_MEMORY; x++) {
-            if (memoryBlock[x] == -1) {
-                sizeCounter++;
+            /* Reads from Memory */
+        for (int readIndex = 0; readIndex < TOTAL_MEMORY; readIndex++) {
+            if (memoryBlock[readIndex] == -1) {
+                contiguousSizeLocated++;
             } else {
-                sizeCounter = 0;
-                positionTracker = x + 1;
+                contiguousSizeLocated = 0;
+                startIndexTracker = readIndex + 1;
             }
-            if (sizeCounter == requestedMemorySize) {
-                for (int y = positionTracker; y < (requestedMemorySize + positionTracker); y++) {
-                    memoryBlock[y] = pid;
+            /* End Reads from Memory */
+
+            /* Writes to Memory */
+            if (contiguousSizeLocated == requestedMemorySize) {
+                for (int writeIndex = startIndexTracker; writeIndex < (requestedMemorySize + startIndexTracker); writeIndex++) {
+                    memoryBlock[writeIndex] = pid;
                 }
                 return true;
             }
+            /* End Writes to Memory */
         }
         return false;
     }
@@ -64,8 +67,4 @@ public class MMU {
             }
         }
     }
-    //must do ---
-    //Keep track of free memory regions vs. occupied
-    //allocates memory space to processes (pid)
-    //release memory space to be free within Kernel.terminate
 }

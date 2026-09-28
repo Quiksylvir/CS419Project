@@ -69,8 +69,8 @@ public class Simulator {
 
 
     private static void getArrivalTimes(List<Process> universalWorkload, Map<Integer, Integer> arrivalTimes) {
-        for (int x = 0; x < universalWorkload.size(); x++) {
-            arrivalTimes.put(universalWorkload.get(x).pid, universalWorkload.get(x).arrivalTime);
+        for (Process process : universalWorkload) {
+            arrivalTimes.put(process.pid, process.arrivalTime);
         }
     }
 
