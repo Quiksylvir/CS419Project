@@ -6,11 +6,14 @@ public class Kernel {
     private final SchedulingAlgo algo;
     private final List<Process> readyQueue = new ArrayList<>();
     private final List<Process> waitQueue = new ArrayList<>();
-    private Map<Integer,Integer> startTimes = new HashMap<>();
-    private Map<Integer, Integer> timesPreempted = new HashMap<>();
+    private final List<Process> memoryQueue = new ArrayList<>();
+    private final Map<Integer,Integer> startTimes = new HashMap<>();
+    private final Map<Integer, Integer> timesPreempted = new HashMap<>();
+    private final MMU MemoryManager;
     private Process runningProcess = null;
 
-    private int quantumLeft = 0;
+
+    private int quantumLeft;
     private final int TIME_QUANTUM;
 
 
@@ -18,11 +21,23 @@ public class Kernel {
         this.algo = algo;
         this.TIME_QUANTUM = timeQuantum;
         this.quantumLeft = timeQuantum;
+        MemoryManager = new MMU(100);
     }
 
     public void admitProcess(Process p) {
-        p.state = Process.State.READY;
-        algo.addProcess(readyQueue, p);
+        //decide if there is enough memory
+        //if (enoughmemorycontiguous) {} if yes, do below and allocate the space (select the first contiguous region)
+        if (MemoryManager.getMemoryBlock(p.currentMemory,p.pid)) {
+            p.state = Process.State.READY;
+            algo.addProcess(readyQueue, p);
+        } else {
+            p.state = Process.State.NEW;
+            memoryQueue.add(p);
+            //if no, Process.State.New/Dont change to ready or place in readyQueue
+            //create a new queue and place in that queue
+        }
+
+
     }
 
     // Called on every clock tick
@@ -135,9 +150,21 @@ public class Kernel {
     }
 
     private void terminateProcess(Process p) {
+        //TO-DO MMU release memory
+        MemoryManager.releaseMemoryBlock(p.pid);
         quantumLeft = TIME_QUANTUM;
         p.state = Process.State.TERMINATED;
         runningProcess = null;
+
+
+        Iterator<Process> iterator = memoryQueue.iterator();
+        while (iterator.hasNext()) {
+            Process process = iterator.next();
+            if (MemoryManager.hasEnoughMemory(process.currentMemory)) {
+                readyQueue.add(process);
+                iterator.remove();
+            }
+        }
     }
 
     private Process dispatchNextProcess(int currentTime) {
