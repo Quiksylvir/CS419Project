@@ -6,16 +6,17 @@ import java.util.List;
 public class MMU {
 
     private final int TOTAL_MEMORY;
-    private final List<Integer> memoryBlock = new ArrayList<>();
+    private final int[] memoryBlock;
 
     public MMU(int memory) {
         TOTAL_MEMORY = memory;
+        memoryBlock = new int[memory];
         initializeMemoryBlock();
     }
 
     private void initializeMemoryBlock() {
         for (int x = 0; x < TOTAL_MEMORY; x++) {
-            memoryBlock.add(-1);
+            memoryBlock[x] = -1;
         }
     }
 
@@ -24,7 +25,7 @@ public class MMU {
         int sizeCounter = 0;
 
         for (int x = 0; x < TOTAL_MEMORY; x++) {
-            if (memoryBlock.get(x) == -1) {
+            if (memoryBlock[x] == -1) {
                 sizeCounter++;
             } else {
                 sizeCounter = 0;
@@ -32,9 +33,8 @@ public class MMU {
             }
             if (sizeCounter == requestedMemorySize) {
                 for (int y = positionTracker; y < (requestedMemorySize + positionTracker); y++) {
-                    memoryBlock.set(y, pid);
+                    memoryBlock[y] = pid;
                 }
-                System.out.println(memoryBlock);
                 return true;
             }
         }
@@ -45,7 +45,7 @@ public class MMU {
         int sizeCounter = 0;
 
         for (int x = 0; x < TOTAL_MEMORY; x++) {
-            if (memoryBlock.get(x) == -1) {
+            if (memoryBlock[x] == -1) {
                 sizeCounter++;
             } else {
                 sizeCounter = 0;
@@ -59,8 +59,8 @@ public class MMU {
 
     public void releaseMemoryBlock(int pid) {
         for (int x = 0; x < TOTAL_MEMORY; x++) {
-            if (memoryBlock.get(x) == pid) {
-                memoryBlock.set(x, -1);
+            if (memoryBlock[x] == pid) {
+                memoryBlock[x] = -1;
             }
         }
     }
