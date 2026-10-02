@@ -9,7 +9,7 @@ public class Kernel {
     private final List<Process> memoryQueue = new ArrayList<>();
     private final Map<Integer,Integer> startTimes = new HashMap<>();
     private final Map<Integer, Integer> timesPreempted = new HashMap<>();
-    private final MMU MemoryManager;
+    private final ContiguousAllocation MemoryManager;
     private Process runningProcess = null;
 
 
@@ -21,13 +21,13 @@ public class Kernel {
         this.algo = algo;
         this.TIME_QUANTUM = timeQuantum;
         this.quantumLeft = timeQuantum;
-        MemoryManager = new MMU(100);
+        MemoryManager = new ContiguousAllocation(100);
     }
 
     public void admitProcess(Process p) {
         //decide if there is enough memory
         //if (enoughmemorycontiguous) {} if yes, do below and allocate the space (select the first contiguous region)
-        if (MemoryManager.getMemoryBlock(p.memoryCost,p.pid)) {
+        if (MemoryManager.allocate(p)) {
             p.state = Process.State.READY;
             algo.addProcess(readyQueue, p);
         } else {
@@ -151,7 +151,7 @@ public class Kernel {
 
     private void terminateProcess(Process p) {
         //TO-DO MMU release memory
-        MemoryManager.releaseMemoryBlock(p.pid);
+        MemoryManager.release(p);
         quantumLeft = TIME_QUANTUM;
         p.state = Process.State.TERMINATED;
         runningProcess = null;

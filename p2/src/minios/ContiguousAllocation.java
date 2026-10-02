@@ -17,7 +17,7 @@ public class ContiguousAllocation implements MemoryManagement{
         }
     }
 
-    private LinkedList<MemoryBlock> freeList = new LinkedList<>();
+    private final LinkedList<MemoryBlock> freeList;
 
     public ContiguousAllocation(int memory) {
         this.freeList= new LinkedList<>();
@@ -70,5 +70,15 @@ public class ContiguousAllocation implements MemoryManagement{
                 i--;
             }
         }
+    }
+
+    public boolean hasEnoughMemory(int memoryCost) {
+
+        for (MemoryBlock block : freeList) {
+            if (block.isFree && block.size >= memoryCost) {
+                return true;
+            }
+        }
+        return false;
     }
 }
