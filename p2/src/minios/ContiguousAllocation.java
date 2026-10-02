@@ -30,20 +30,24 @@ public class ContiguousAllocation implements MemoryManagement{
             MemoryBlock block = freeList.get(i);
 
             if (block.isFree && block.size >= process.memoryCost) {
-                // Exact match or split block
-                int remainder = block.size - process.memoryCost;
 
+                process.baseAddress = block.startAddress;
+                int remainingSize = block.size - process.memoryCost;
+
+                block.startAddress = block.startAddress + process.memoryCost;
                 block.isFree = false;
                 block.size = process.memoryCost;
                 block.processId = process.pid;
 
-                if (remainder > 0) {
-                    MemoryBlock leftover = new MemoryBlock(block.startAddress + block.size, remainder, true);
-                    freeList.add(i + 1, leftover);
+                if (remainingSize > 0) {
+                    MemoryBlock leftover = new MemoryBlock(block.startAddress, remainingSize, true);
+                    freeList.addLast(leftover);
                 }
                 return true;
             }
+
         }
+
         return false;
     }
 

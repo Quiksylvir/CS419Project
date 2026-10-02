@@ -66,7 +66,6 @@ public class Kernel {
                 // In this case, no instruction is executed, so no CPU cycle
                 // is used. Can't advance the simulation clock. Loop
                 // back and grab the next process to execute.
-                continue;
             }
 
             // I/O instruction: process enters I/O and no longer uses CPU
@@ -78,7 +77,6 @@ public class Kernel {
                 runningProcess = null;
                 // Can't advance the simulation clock. Loop back
                 // and grab the next process to execute.
-                continue;
             }
 
             // CPU instruction: the instruction has not finished;
@@ -111,7 +109,6 @@ public class Kernel {
                 runningProcess.programCounter++;
                 // Can't advance the simulation clock. Loop back
                 // and move to the next instruction.
-                continue;
             }
         }
     }

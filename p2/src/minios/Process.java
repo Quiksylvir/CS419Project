@@ -12,6 +12,8 @@ public class Process {
     public State state = State.NEW;
     public final List<Instruction> code;
     public int programCounter = 0;
+    public int baseAddress = 0;
+    public int[] pageTable;
 
     //size (limit register): read from the tracer
     //relocation register (base memory address) : specified by kernel
