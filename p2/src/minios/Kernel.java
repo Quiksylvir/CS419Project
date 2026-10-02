@@ -27,7 +27,7 @@ public class Kernel {
     public void admitProcess(Process p) {
         //decide if there is enough memory
         //if (enoughmemorycontiguous) {} if yes, do below and allocate the space (select the first contiguous region)
-        if (MemoryManager.getMemoryBlock(p.currentMemory,p.pid)) {
+        if (MemoryManager.getMemoryBlock(p.memoryCost,p.pid)) {
             p.state = Process.State.READY;
             algo.addProcess(readyQueue, p);
         } else {
@@ -160,7 +160,7 @@ public class Kernel {
         Iterator<Process> iterator = memoryQueue.iterator();
         while (iterator.hasNext()) {
             Process process = iterator.next();
-            if (MemoryManager.hasEnoughMemory(process.currentMemory)) {
+            if (MemoryManager.hasEnoughMemory(process.memoryCost)) {
                 readyQueue.add(process);
                 iterator.remove();
             }

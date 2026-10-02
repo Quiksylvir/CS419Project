@@ -8,7 +8,7 @@ public class Process {
 
     public final int pid;
     public final int arrivalTime;
-    public final int currentMemory;
+    public final int memoryCost;
     public State state = State.NEW;
     public final List<Instruction> code;
     public int programCounter = 0;
@@ -18,7 +18,7 @@ public class Process {
     public Process(int pid, int arrivalTime, int currentMemory, List<Instruction> code) {
         this.pid = pid;
         this.arrivalTime = arrivalTime;
-        this.currentMemory = currentMemory;
+        this.memoryCost = currentMemory;
         this.code = new ArrayList<>(code);
     }
 
