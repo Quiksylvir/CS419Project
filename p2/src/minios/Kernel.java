@@ -9,7 +9,7 @@ public class Kernel {
     private final List<Process> memoryQueue = new ArrayList<>();
     private final Map<Integer,Integer> startTimes = new HashMap<>();
     private final Map<Integer, Integer> timesPreempted = new HashMap<>();
-    private final ContiguousAllocation MemoryManager;
+    private final MemoryManagement MemoryManager;
     private Process runningProcess = null;
 
 
@@ -17,11 +17,15 @@ public class Kernel {
     private final int TIME_QUANTUM;
 
 
-    public Kernel(SchedulingAlgo algo, int timeQuantum) {
+    public Kernel(SchedulingAlgo algo, int timeQuantum, int memoryModeFlag) {
         this.algo = algo;
         this.TIME_QUANTUM = timeQuantum;
         this.quantumLeft = timeQuantum;
-        MemoryManager = new ContiguousAllocation(100);
+        if (memoryModeFlag == 0) {
+            MemoryManager = new ContiguousAllocation(100);
+        } else {
+            MemoryManager = new PagedAllocation(100);
+        }
     }
 
     public void admitProcess(Process p) {
@@ -157,7 +161,7 @@ public class Kernel {
         Iterator<Process> iterator = memoryQueue.iterator();
         while (iterator.hasNext()) {
             Process process = iterator.next();
-            if (MemoryManager.hasEnoughMemory(process.memoryCost)) {
+            if (MemoryManager.hasEnoughMemory(process)) {
                 readyQueue.add(process);
                 iterator.remove();
             }

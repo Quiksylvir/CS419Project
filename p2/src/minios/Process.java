@@ -22,6 +22,7 @@ public class Process {
         this.arrivalTime = arrivalTime;
         this.memoryCost = currentMemory;
         this.code = new ArrayList<>(code);
+        pageTable = new int[memoryCost/4];
     }
 
     public Instruction getCurrentInstruction() {

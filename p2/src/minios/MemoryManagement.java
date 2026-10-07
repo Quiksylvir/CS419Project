@@ -4,5 +4,6 @@ public interface MemoryManagement {
 
     boolean allocate(Process process);
     void release(Process process);
+    boolean hasEnoughMemory(Process process);
 
 }
