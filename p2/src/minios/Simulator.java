@@ -61,7 +61,7 @@ public class Simulator {
         getArrivalTimes(universalWorkload, arrivalTimes);
 
         System.out.println("\n\nSimulation START!");
-        Kernel Kernel = new Kernel(Algo, quantum, 0);
+        Kernel Kernel = new Kernel(Algo, quantum, 1);
         Simulator Sim = new Simulator(Kernel, universalWorkload);Sim.run();
         System.out.println("Average wait time: " + getAverageWaitTime(arrivalTimes, Kernel.getStartTimes(), quantum, Kernel.getTimesPreempted()));
         System.out.println("Simulation END!\n\n");
