@@ -35,13 +35,13 @@ public class PagedAllocation implements MemoryManagement{
     }
     @Override
     public void release(Process process) {
+        System.out.println(Arrays.toString(process.pageTable));
         for (int x = 0; x < process.pageTable.length; x++) {
             frames[process.pageTable[x]] = -1;
         }
     }
 
-    @Override
-    public boolean hasEnoughMemory(Process process) {
+    private boolean hasEnoughMemory(Process process) {
         int sizeCounter = 0;
         for (int page : frames) {
             if (page == -1) {

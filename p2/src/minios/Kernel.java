@@ -157,12 +157,12 @@ public class Kernel {
         p.state = Process.State.TERMINATED;
         runningProcess = null;
 
-
+    ///FIXXXXX
         Iterator<Process> iterator = memoryQueue.iterator();
         while (iterator.hasNext()) {
             Process process = iterator.next();
-            if (MemoryManager.hasEnoughMemory(process)) {
-                readyQueue.add(process);
+            if (MemoryManager.allocate(process)) {
+                algo.addProcess(readyQueue, process);
                 iterator.remove();
             }
         }

@@ -75,14 +75,4 @@ public class ContiguousAllocation implements MemoryManagement{
             }
         }
     }
-
-    public boolean hasEnoughMemory(Process process) {
-
-        for (MemoryBlock block : freeList) {
-            if (block.isFree && block.size >= process.memoryCost) {
-                return true;
-            }
-        }
-        return false;
-    }
 }
