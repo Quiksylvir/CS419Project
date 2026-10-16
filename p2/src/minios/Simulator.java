@@ -1,10 +1,7 @@
 package minios;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class Simulator {
     private final Kernel kernel;
@@ -42,26 +39,51 @@ public class Simulator {
     }
 
     public static void main(String[] args) throws Exception{
+        int memoryMode = getMemoryMode();
         int quantum = 0;
+        System.out.println("FCFS");
+        pause();
         SchedulingAlgo FCFSAlgo = new FCFS();
-        startSim(FCFSAlgo, quantum);
-
+        startSim(FCFSAlgo, quantum, memoryMode);
+        System.out.println("SJF");
+        pause();
         SchedulingAlgo SJFAlgo = new SJF();
-        startSim(SJFAlgo, quantum);
-
+        startSim(SJFAlgo, quantum, memoryMode);
+        System.out.println("RR2");
+        pause();
         quantum = 2;
         SchedulingAlgo RR2Algo = new RR2();
-        startSim(RR2Algo, quantum);
+        startSim(RR2Algo, quantum, memoryMode);
 
     }
 
-    private static void startSim(SchedulingAlgo Algo, int quantum) throws IOException {
+    private static void pause() {
+        do {
+            System.out.println("Press enter to continue to run the algorithm");
+            if (!new Scanner(System.in).nextLine().equalsIgnoreCase("")) {
+                System.out.println("That's not enter");
+            } else {
+                break;
+            }
+        } while(true);
+    }
+
+    private static int getMemoryMode() {
+        int memoryMode;
+        do {
+            System.out.print("Enter memory mode\n0=Contiguous\n1=Paged\nSelection: ");
+            memoryMode = Integer.parseInt(new Scanner(System.in).nextLine());
+        } while (memoryMode != 0 && memoryMode != 1);
+        return memoryMode;
+    }
+
+    private static void startSim(SchedulingAlgo Algo, int quantum, int memoryModeFlag) throws IOException {
         List<Process> universalWorkload = TraceParser.parseWorkload("workload.txt");
         Map<Integer, Integer> arrivalTimes = new HashMap<>();
         getArrivalTimes(universalWorkload, arrivalTimes);
 
         System.out.println("\n\nSimulation START!");
-        Kernel Kernel = new Kernel(Algo, quantum, 1);
+        Kernel Kernel = new Kernel(Algo, quantum, memoryModeFlag);
         Simulator Sim = new Simulator(Kernel, universalWorkload);Sim.run();
         System.out.println("Average wait time: " + getAverageWaitTime(arrivalTimes, Kernel.getStartTimes(), quantum, Kernel.getTimesPreempted()));
         System.out.println("Simulation END!\n\n");

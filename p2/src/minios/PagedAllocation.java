@@ -16,7 +16,7 @@ public class PagedAllocation implements MemoryManagement{
 
     @Override
     public boolean allocate(Process process) {
-        int pagesRemaining = process.pageTable.length;
+        int pagesRequested = process.pageTable.length;
         int pageIndex = 0;
         if (hasEnoughMemory(process)) {
             for (int x = 0; x < frames.length; x++) {
@@ -24,9 +24,9 @@ public class PagedAllocation implements MemoryManagement{
                     frames[x] = process.pid;
                     process.pageTable[pageIndex] = x;
                     pageIndex++;
-                    pagesRemaining--;
+                    pagesRequested--;
                 }
-                if (pagesRemaining == 0) {
+                if (pagesRequested == 0) {
                     return true;
                 }
             }
@@ -35,8 +35,8 @@ public class PagedAllocation implements MemoryManagement{
     }
     @Override
     public void release(Process process) {
-        System.out.println(Arrays.toString(process.pageTable));
         for (int x = 0; x < process.pageTable.length; x++) {
+
             frames[process.pageTable[x]] = -1;
         }
     }
