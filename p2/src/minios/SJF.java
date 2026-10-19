@@ -20,7 +20,7 @@ public class SJF implements  SchedulingAlgo{
             } else {
                 int tempSmallest = 0;
                 for (int index = 0; index < readyQueue.size() - 1; index++) {
-                    if (getDuration(index, readyQueue) < getDuration(index + 1, readyQueue)) {
+                    if (getDuration(index, readyQueue) < getDuration(tempSmallest, readyQueue)) {
                         tempSmallest = index;
                     }
                 }
