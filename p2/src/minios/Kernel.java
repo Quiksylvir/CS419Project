@@ -7,12 +7,9 @@ public class Kernel {
     private final List<Process> readyQueue = new ArrayList<>();
     private final List<Process> waitQueue = new ArrayList<>();
     private final List<Process> memoryQueue = new ArrayList<>();
-    private final Map<Integer,Integer> startTimes = new HashMap<>();
-    private final Map<Integer, Integer> timesPreempted = new HashMap<>();
     private final MemoryManagement MemoryManager;
     private Process runningProcess = null;
-
-
+    private final Map<Integer, Integer> readyQueueWaitTimes = new HashMap<>();
     private int quantumLeft;
     private final int TIME_QUANTUM;
 
@@ -29,8 +26,6 @@ public class Kernel {
     }
 
     public void admitProcess(Process p) {
-        //decide if there is enough memory
-        //if (enoughmemorycontiguous) {} if yes, do below and allocate the space (select the first contiguous region)
         if (MemoryManager.allocate(p)) {
             p.state = Process.State.READY;
             algo.addProcess(readyQueue, p);
@@ -47,8 +42,8 @@ public class Kernel {
     // Called on every clock tick
     public void onClockTick(int currentTime) {
         // check all processes currently waiting in I/O wait queue
+        trackReadyQueueWaitTimes();
         serviceWaitQueue(currentTime);
-
         boolean cpuCycleUsed = false;
         // Execute one CPU cycle
         // (One clock tick is one CPU cycle)
@@ -97,7 +92,6 @@ public class Kernel {
                 if (runningProcess.getCurrentInstruction() != null) {
                     if (quantumLeft == 0 && inst.remainingTicks != 0) {
                         System.out.println("[Tick " + (currentTime + 1) + "] Process " + runningProcess.pid + " time quantum expired. Preempting.");
-                        markPreemptCounter(runningProcess);
                         runningProcess.state = Process.State.READY;
                         algo.addProcess(readyQueue, runningProcess);
                         runningProcess = null;
@@ -116,16 +110,14 @@ public class Kernel {
         }
     }
 
-    private void markPreemptCounter(Process runningProcess) {
-        if (timesPreempted.containsKey(runningProcess.pid)) {
-            timesPreempted.put(runningProcess.pid, (timesPreempted.get(runningProcess.pid) + 1));
-        } else {
-            timesPreempted.put(runningProcess.pid, 1);
+    private void trackReadyQueueWaitTimes() {
+        for (Process process : readyQueue) {
+            if (readyQueueWaitTimes.containsKey(process.pid)) {
+                readyQueueWaitTimes.put(process.pid, (readyQueueWaitTimes.get(process.pid) + 1));
+            } else {
+                readyQueueWaitTimes.put(process.pid, 0);
+            }
         }
-    }
-
-    public Map<Integer, Integer> getTimesPreempted() {
-        return timesPreempted;
     }
 
     private void serviceWaitQueue(int currentTime) {
@@ -150,7 +142,9 @@ public class Kernel {
     }
 
     private void terminateProcess(Process p) {
-        //TO-DO MMU release memory
+        if (!readyQueueWaitTimes.containsKey(p.pid)) {
+            readyQueueWaitTimes.put(p.pid,0);
+        }
         MemoryManager.release(p);
         quantumLeft = TIME_QUANTUM;
         p.state = Process.State.TERMINATED;
@@ -170,11 +164,6 @@ public class Kernel {
         runningProcess = algo.selectNextProcess(readyQueue);
         if (runningProcess != null) {
             quantumLeft = TIME_QUANTUM;
-            if (TIME_QUANTUM == 0) {
-                addInitialStartTime(currentTime, runningProcess.pid);
-            } else {
-                addLastStartTime(currentTime, runningProcess.pid);
-            }
             System.out.println("[Tick " + currentTime + "] Process " + runningProcess.pid + " executes.");
             runningProcess.state = Process.State.RUNNING;
             return runningProcess;
@@ -190,18 +179,8 @@ public class Kernel {
                 waitQueue.isEmpty();
     }
 
-
-    private void addInitialStartTime(int currentTime, int pid) {
-            if (!startTimes.containsKey(pid)) {
-                startTimes.put(pid, currentTime);
-            }
+    public Map<Integer,Integer> getReadyQueueWaitTimes() {
+        return readyQueueWaitTimes;
     }
 
-    private void addLastStartTime(int currentTime, int pid) {
-        startTimes.put(pid,currentTime);
-    }
-
-    public Map<Integer, Integer> getStartTimes() {
-        return startTimes;
-    }
 }
