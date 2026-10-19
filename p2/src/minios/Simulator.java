@@ -24,7 +24,7 @@ public class Simulator {
                 Process p = it.next();
                 if (p.arrivalTime == clock) {
                     System.out.println("[Tick " + clock + "] Process " + p.pid + " arrives.");
-                    kernel.admitProcess(p);
+                    kernel.admitProcess(p, clock);
                     it.remove();
                 }
             }
@@ -38,22 +38,23 @@ public class Simulator {
 
     }
 
-    public static void main(String[] args) throws Exception{
+    public static void main(String[] args) throws Exception {
         int memoryMode = getMemoryMode();
         int quantum = 0;
         System.out.println("FCFS");
         pause();
         SchedulingAlgo FCFSAlgo = new FCFS();
         startSim(FCFSAlgo, quantum, memoryMode);
-        System.out.println("SJF");
-        pause();
-        SchedulingAlgo SJFAlgo = new SJF();
-        startSim(SJFAlgo, quantum, memoryMode);
-        System.out.println("RR2");
-        pause();
-        quantum = 2;
-        SchedulingAlgo RR2Algo = new RR2();
-        startSim(RR2Algo, quantum, memoryMode);
+        //SJF and RR2 (grading done in FCFS)
+//        System.out.println("SJF");
+//        pause();
+//        SchedulingAlgo SJFAlgo = new SJF();
+//        startSim(SJFAlgo, quantum, memoryMode);
+//        System.out.println("RR2");
+//        pause();
+//        quantum = 2;
+//        SchedulingAlgo RR2Algo = new RR2();
+//        startSim(RR2Algo, quantum, memoryMode);
 
     }
 
@@ -65,7 +66,7 @@ public class Simulator {
             } else {
                 break;
             }
-        } while(true);
+        } while (true);
     }
 
     private static int getMemoryMode() {
@@ -79,34 +80,24 @@ public class Simulator {
 
     private static void startSim(SchedulingAlgo Algo, int quantum, int memoryModeFlag) throws IOException {
         List<Process> universalWorkload = TraceParser.parseWorkload("workload.txt");
-        Map<Integer, Integer> arrivalTimes = new HashMap<>();
-        getArrivalTimes(universalWorkload, arrivalTimes);
 
         System.out.println("\n\nSimulation START!");
         Kernel Kernel = new Kernel(Algo, quantum, memoryModeFlag);
-        Simulator Sim = new Simulator(Kernel, universalWorkload);Sim.run();
-        System.out.println("Average wait time: " + getAverageWaitTime(arrivalTimes, Kernel.getStartTimes(), quantum, Kernel.getTimesPreempted()));
+        Simulator Sim = new Simulator(Kernel, universalWorkload);
+        Sim.run();
+        System.out.println("Algorithm average wait time: " + printAverageWaitTime(Kernel.getReadyQueueWaitTimes()));
+        System.out.println("Algorithm wait time per process: " + Kernel.getReadyQueueWaitTimes());
         System.out.println("Simulation END!\n\n");
     }
 
-
-    private static void getArrivalTimes(List<Process> universalWorkload, Map<Integer, Integer> arrivalTimes) {
-        for (Process process : universalWorkload) {
-            arrivalTimes.put(process.pid, process.arrivalTime);
+    private static double printAverageWaitTime(Map<Integer, Integer> readyQueueWaitTimes) {
+        double total = 0;
+        for (int x = 1; x <= readyQueueWaitTimes.size(); x++) {
+            total += readyQueueWaitTimes.get(x);
         }
+        return total / readyQueueWaitTimes.size();
     }
-
-    private static double getAverageWaitTime(Map<Integer, Integer> arrivalTimes, Map<Integer, Integer> startTimes, int quantum, Map<Integer, Integer> timesPreempted) {
-        double runningTotal = 0;
-        System.out.println("Arrives: " + arrivalTimes);
-        System.out.println("Starts: " + startTimes);
-        System.out.println("Pre-empts: " + timesPreempted);
-        for (int x = 1; x <= arrivalTimes.size();x++) {
-            timesPreempted.putIfAbsent(x, 0);
-            runningTotal += startTimes.get(x) - arrivalTimes.get(x) - (timesPreempted.get(x) * quantum);
-        }
-        return runningTotal / arrivalTimes.size();
-    }
-
 }
+
+
 

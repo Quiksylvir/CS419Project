@@ -22,7 +22,18 @@ public class Process {
         this.arrivalTime = arrivalTime;
         this.memoryCost = currentMemory;
         this.code = new ArrayList<>(code);
-        pageTable = new int[memoryCost/4];
+
+        int tableSize = getTableSize();
+        this.pageTable = new int[tableSize];
+    }
+
+    private int getTableSize() {
+        double memoryNeeded = (double) memoryCost /4;
+        int tableSize = (int) Math.ceil(memoryNeeded);
+        if (tableSize == 0) {
+            tableSize = 1;
+        }
+        return tableSize;
     }
 
     public Instruction getCurrentInstruction() {
