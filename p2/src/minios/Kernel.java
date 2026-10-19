@@ -94,13 +94,12 @@ public class Kernel {
                     // instruction.
                     runningProcess.programCounter++;
                 }
-
-                if (quantumLeft == 0) {
-                    if (runningProcess.getCurrentInstruction() != null) {
-                        System.out.println("[Tick " + (currentTime+1) + "] Process " + runningProcess.pid + " time quantum expired. Preempting.");
+                if (runningProcess.getCurrentInstruction() != null) {
+                    if (quantumLeft == 0 && inst.remainingTicks != 0) {
+                        System.out.println("[Tick " + (currentTime + 1) + "] Process " + runningProcess.pid + " time quantum expired. Preempting.");
                         markPreemptCounter(runningProcess);
                         runningProcess.state = Process.State.READY;
-                        algo.addProcess(readyQueue,runningProcess);
+                        algo.addProcess(readyQueue, runningProcess);
                         runningProcess = null;
                     }
                 }
@@ -157,7 +156,6 @@ public class Kernel {
         p.state = Process.State.TERMINATED;
         runningProcess = null;
 
-    ///FIXXXXX
         Iterator<Process> iterator = memoryQueue.iterator();
         while (iterator.hasNext()) {
             Process process = iterator.next();
