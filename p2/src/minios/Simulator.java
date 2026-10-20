@@ -85,17 +85,19 @@ public class Simulator {
         Kernel Kernel = new Kernel(Algo, quantum, memoryModeFlag);
         Simulator Sim = new Simulator(Kernel, universalWorkload);
         Sim.run();
-        System.out.println("Algorithm average wait time: " + printAverageWaitTime(Kernel.getReadyQueueWaitTimes()));
-        System.out.println("Algorithm wait time per process: " + Kernel.getReadyQueueWaitTimes());
+        System.out.println("Ready queue average wait time: " + printAverageWaitTime(Kernel.getReadyQueueWaitTimes()));
+        System.out.println("Ready queue wait time per process: " + Kernel.getReadyQueueWaitTimes());
+        System.out.println("Memory queue average wait time: " + printAverageWaitTime(Kernel.getMemoryQueueWaitTimes()));
+        System.out.println("Memory queue wait time per process: " + Kernel.getMemoryQueueWaitTimes());
         System.out.println("Simulation END!\n\n");
     }
 
-    private static double printAverageWaitTime(Map<Integer, Integer> readyQueueWaitTimes) {
+    private static double printAverageWaitTime(Map<Integer, Integer> waitTimes) {
         double total = 0;
-        for (int x = 1; x <= readyQueueWaitTimes.size(); x++) {
-            total += readyQueueWaitTimes.get(x);
+        for (int x = 1; x <= waitTimes.size(); x++) {
+            total += waitTimes.get(x);
         }
-        return total / readyQueueWaitTimes.size();
+        return total / waitTimes.size();
     }
 }
 

@@ -10,6 +10,7 @@ public class Kernel {
     private final MemoryManagement MemoryManager;
     private Process runningProcess = null;
     private final Map<Integer, Integer> readyQueueWaitTimes = new HashMap<>();
+    private final Map<Integer, Integer> memoryQueueWaitTimes = new HashMap<>();
     private int quantumLeft;
     private final int TIME_QUANTUM;
 
@@ -55,7 +56,8 @@ public class Kernel {
     public void onClockTick(int currentTime) {
         // check all processes currently waiting in I/O wait queue
         trackReadyQueueWaitTimes();
-        serviceWaitQueue(currentTime);
+        trackMemoryQueueWaitTimes();
+        serviceIOWaitQueue(currentTime);
         boolean cpuCycleUsed = false;
         // Execute one CPU cycle
         // (One clock tick is one CPU cycle)
@@ -122,6 +124,16 @@ public class Kernel {
         }
     }
 
+    private void trackMemoryQueueWaitTimes() {
+        for (Process process : memoryQueue) {
+            if (memoryQueueWaitTimes.containsKey(process.pid)) {
+                memoryQueueWaitTimes.put(process.pid, (memoryQueueWaitTimes.get(process.pid) + 1));
+            } else {
+                memoryQueueWaitTimes.put(process.pid, 0);
+            }
+        }
+    }
+
     private void trackReadyQueueWaitTimes() {
         for (Process process : readyQueue) {
             if (readyQueueWaitTimes.containsKey(process.pid)) {
@@ -132,7 +144,7 @@ public class Kernel {
         }
     }
 
-    private void serviceWaitQueue(int currentTime) {
+    private void serviceIOWaitQueue(int currentTime) {
         Iterator<Process> it = waitQueue.iterator();
         while (it.hasNext()) {
             Process p = it.next();
@@ -154,9 +166,7 @@ public class Kernel {
     }
 
     private void terminateProcess(Process p, int currentTime) {
-        if (!readyQueueWaitTimes.containsKey(p.pid)) {
-            readyQueueWaitTimes.put(p.pid,0);
-        }
+        verifyHashMapsAreNotBlank(p);
         MemoryManager.release(p, currentTime);
         quantumLeft = TIME_QUANTUM;
         p.state = Process.State.TERMINATED;
@@ -171,6 +181,16 @@ public class Kernel {
                 algo.addProcess(readyQueue, process);
                 iterator.remove();
             }
+        }
+    }
+
+    private void verifyHashMapsAreNotBlank(Process p) {
+        if (!readyQueueWaitTimes.containsKey(p.pid)) {
+            readyQueueWaitTimes.put(p.pid,0);
+        }
+
+        if (!memoryQueueWaitTimes.containsKey(p.pid)) {
+            memoryQueueWaitTimes.put(p.pid,0);
         }
     }
 
@@ -196,5 +216,9 @@ public class Kernel {
     public Map<Integer,Integer> getReadyQueueWaitTimes() {
         return readyQueueWaitTimes;
     }
+    public Map<Integer,Integer> getMemoryQueueWaitTimes() {
+        return memoryQueueWaitTimes;
+    }
+
 
 }
