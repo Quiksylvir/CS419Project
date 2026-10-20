@@ -4,7 +4,7 @@ import java.util.LinkedList;
 
 public class ContiguousAllocation implements MemoryManagement{
 
-    private static class MemoryBlock {
+    static class MemoryBlock {
         int startAddress;
         int size;
         boolean isFree;
@@ -52,7 +52,7 @@ public class ContiguousAllocation implements MemoryManagement{
     }
 
     @Override
-    public void release(Process process){
+    public void release(Process process, int currentTime){
         for (MemoryBlock block : freeList) {
             if (block.processId == process.pid) {
                 block.isFree = true;
@@ -75,4 +75,17 @@ public class ContiguousAllocation implements MemoryManagement{
             }
         }
     }
+
+    @Override
+    public void printMemory(int currentTime, Process p) {
+        System.out.println("[Tick " + currentTime + "] Process " + p.pid + " requires "  + p.memoryCost +" memory to be admitted: ");
+        for (MemoryBlock block: freeList) {
+            if(block.isFree) {
+
+                System.out.print("[Tick " + currentTime + "] Process " + p.pid);
+                System.out.println(" block Size " + block.size + " is insufficient.");
+            }
+        }
+    }
 }
+

@@ -34,7 +34,7 @@ public class PagedAllocation implements MemoryManagement{
         return false;
     }
     @Override
-    public void release(Process process) {
+    public void release(Process process, int currentTime) {
         for (int x = 0; x < process.pageTable.length; x++) {
 
             frames[process.pageTable[x]] = -1;
@@ -54,7 +54,16 @@ public class PagedAllocation implements MemoryManagement{
         return false;
     }
 
-
-    //4byte frames
-    //25 size array
+    @Override
+    public void printMemory(int currentTime, Process p) {
+        int freeFrames = 0;
+        for (int frame : frames) {
+            if (frame == -1) {
+                freeFrames++;
+            }
+        }
+        System.out.println("[Tick " + currentTime + "] Process " + p.pid + " requires "  + p.memoryCost +" memory to be admitted: ");
+        System.out.print("[Tick " + currentTime + "] Process " + p.pid);
+        System.out.println(" " + freeFrames + " frame(s) is insufficient.");
+    }
 }

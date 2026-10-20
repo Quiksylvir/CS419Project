@@ -42,7 +42,7 @@ public class Simulator {
         int memoryMode = getMemoryMode();
         int quantum = 0;
         System.out.println("FCFS");
-        pause();
+        //pause();
         SchedulingAlgo FCFSAlgo = new FCFS();
         startSim(FCFSAlgo, quantum, memoryMode);
         //SJF and RR2 (grading done in FCFS)

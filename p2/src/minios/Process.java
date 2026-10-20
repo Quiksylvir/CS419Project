@@ -12,7 +12,7 @@ public class Process {
     public State state = State.NEW;
     public final List<Instruction> code;
     public int programCounter = 0;
-    public int baseAddress = 0;
+    public Integer baseAddress = null;
     public int[] pageTable;
 
     //size (limit register): read from the tracer

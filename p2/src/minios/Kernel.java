@@ -27,10 +27,12 @@ public class Kernel {
 
     public void admitProcess(Process p, int currentTime) {
         if (MemoryManager.allocate(p)) {
+            declareMemoryAllocated(p, currentTime);
             p.state = Process.State.READY;
             algo.addProcess(readyQueue, p);
         } else {
-            System.out.println("[Tick " + currentTime + "] Process " + p.pid + " enters memory wait.");
+            MemoryManager.printMemory(currentTime, p);
+            System.out.println("[Tick " + currentTime + "] Process " + p.pid + " enters memory queue.");
             p.state = Process.State.NEW;
             memoryQueue.add(p);
             //if no, Process.State.New/Dont change to ready or place in readyQueue
@@ -38,6 +40,16 @@ public class Kernel {
         }
 
 
+    }
+
+    private static void declareMemoryAllocated(Process p, int currentTime) {
+        if (p.baseAddress != null) {
+            System.out.print("[Tick " + currentTime + "] Process " + p.pid);
+            System.out.println(" Starting memory address " + p.baseAddress + " block size " + p.memoryCost);
+        } else {
+            System.out.print("[Tick " + currentTime + "] Process " + p.pid);
+            System.out.println(" Page Table:" + Arrays.toString(p.pageTable));
+        }
     }
 
     // Called on every clock tick
@@ -62,7 +74,7 @@ public class Kernel {
             // Current process has finished.
             if (inst == null) {
                 System.out.println("[Tick " + currentTime + "] Process " + runningProcess.pid + " Terminates.");
-                terminateProcess(runningProcess);
+                terminateProcess(runningProcess, currentTime);
                 // In this case, no instruction is executed, so no CPU cycle
                 // is used. Can't advance the simulation clock. Loop
                 // back and grab the next process to execute.
@@ -142,11 +154,11 @@ public class Kernel {
         }
     }
 
-    private void terminateProcess(Process p) {
+    private void terminateProcess(Process p, int currentTime) {
         if (!readyQueueWaitTimes.containsKey(p.pid)) {
             readyQueueWaitTimes.put(p.pid,0);
         }
-        MemoryManager.release(p);
+        MemoryManager.release(p, currentTime);
         quantumLeft = TIME_QUANTUM;
         p.state = Process.State.TERMINATED;
         runningProcess = null;
