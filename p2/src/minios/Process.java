@@ -28,7 +28,7 @@ public class Process {
     }
 
     private int getTableSize() {
-        double memoryNeeded = (double) memoryCost /4;
+        double memoryNeeded = (double) memoryCost /10;
         int tableSize = (int) Math.ceil(memoryNeeded);
         if (tableSize == 0) {
             tableSize = 1;

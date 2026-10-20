@@ -63,15 +63,18 @@ public class ContiguousAllocation implements MemoryManagement{
     }
 
     private void coalesce(Process p, int currentTime) {
+        boolean didCoalesce = false;
+
         for (int i = 0; i < freeList.size() - 1; i++) {
             MemoryBlock current = freeList.get(i);
             MemoryBlock next = freeList.get(i + 1);
 
             if (current.isFree && next.isFree) {
-                System.out.println("[Tick " + currentTime + "] Process " + p.pid + " coalesces");
+                didCoalesce = true;
+                System.out.println("[Tick " + currentTime + "] Memory coalesces.");
                 for (MemoryBlock block: freeList) {
                     if(block.isFree) {
-                        System.out.print("[Tick " + currentTime + "] Process " + p.pid);
+                        System.out.print("[Tick " + currentTime + "] Memory");
                         System.out.println(" before coalesce start address " + block.startAddress + " size " + block.size);
                     }
                 }
@@ -80,11 +83,13 @@ public class ContiguousAllocation implements MemoryManagement{
                 i--;
             }
         }
+        if (didCoalesce){
         for (MemoryBlock block: freeList) {
             if(block.isFree) {
-                System.out.print("[Tick " + currentTime + "] Process " + p.pid);
+                System.out.print("[Tick " + currentTime + "] Memory");
                 System.out.println(" after coalesce start address " + block.startAddress + " size " + block.size);
             }
+        }
         }
 
     }

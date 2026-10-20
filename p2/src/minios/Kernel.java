@@ -13,15 +13,14 @@ public class Kernel {
     private int quantumLeft;
     private final int TIME_QUANTUM;
 
-
     public Kernel(SchedulingAlgo algo, int timeQuantum, int memoryModeFlag) {
         this.algo = algo;
         this.TIME_QUANTUM = timeQuantum;
         this.quantumLeft = timeQuantum;
         if (memoryModeFlag == 0) {
-            MemoryManager = new ContiguousAllocation(100);
+            MemoryManager = new ContiguousAllocation(120);
         } else {
-            MemoryManager = new PagedAllocation(100);
+            MemoryManager = new PagedAllocation(120);
         }
     }
 
@@ -167,6 +166,8 @@ public class Kernel {
         while (iterator.hasNext()) {
             Process process = iterator.next();
             if (MemoryManager.allocate(process)) {
+                System.out.println("[Tick " + currentTime + "] Process " + process.pid + " can be admitted from memory queue.");
+                declareMemoryAllocated(process, currentTime);
                 algo.addProcess(readyQueue, process);
                 iterator.remove();
             }

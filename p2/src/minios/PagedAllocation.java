@@ -6,7 +6,7 @@ public class PagedAllocation implements MemoryManagement{
 
     private final int[] frames;
     public PagedAllocation(int memory) {
-        frames = new int[memory/4];
+        frames = new int[memory/10];
         initializeFrames();
     }
 
@@ -62,8 +62,8 @@ public class PagedAllocation implements MemoryManagement{
                 freeFrames++;
             }
         }
-        System.out.println("[Tick " + currentTime + "] Process " + p.pid + " requires "  + p.memoryCost +" memory to be admitted: ");
+        System.out.println("[Tick " + currentTime + "] Process " + p.pid + " requires "  + (p.pageTable.length) +" frame(s) to be admitted: ");
         System.out.print("[Tick " + currentTime + "] Process " + p.pid);
-        System.out.println(" " + freeFrames + " frame(s) is insufficient.");
+        System.out.println(" found " + freeFrames + " free frame(s).");
     }
 }
