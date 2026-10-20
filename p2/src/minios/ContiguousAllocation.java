@@ -30,18 +30,17 @@ public class ContiguousAllocation implements MemoryManagement{
             MemoryBlock block = freeList.get(i);
 
             if (block.isFree && block.size >= process.memoryCost) {
-
                 process.baseAddress = block.startAddress;
                 int remainingSize = block.size - process.memoryCost;
 
-                block.startAddress = block.startAddress + process.memoryCost;
                 block.isFree = false;
                 block.size = process.memoryCost;
                 block.processId = process.pid;
 
                 if (remainingSize > 0) {
-                    MemoryBlock leftover = new MemoryBlock(block.startAddress, remainingSize, true);
-                    freeList.addLast(leftover);
+                    int leftoverStart = block.startAddress + process.memoryCost;
+                    MemoryBlock leftover = new MemoryBlock(leftoverStart, remainingSize, true);
+                    freeList.add(i+1,leftover);
                 }
                 return true;
             }
@@ -60,20 +59,34 @@ public class ContiguousAllocation implements MemoryManagement{
                 break;
             }
         }
-        coalesce();
+        coalesce(process, currentTime);
     }
 
-    private void coalesce() {
+    private void coalesce(Process p, int currentTime) {
         for (int i = 0; i < freeList.size() - 1; i++) {
             MemoryBlock current = freeList.get(i);
             MemoryBlock next = freeList.get(i + 1);
 
             if (current.isFree && next.isFree) {
+                System.out.println("[Tick " + currentTime + "] Process " + p.pid + " coalesces");
+                for (MemoryBlock block: freeList) {
+                    if(block.isFree) {
+                        System.out.print("[Tick " + currentTime + "] Process " + p.pid);
+                        System.out.println(" before coalesce start address " + block.startAddress + " size " + block.size);
+                    }
+                }
                 current.size += next.size;
                 freeList.remove(i + 1);
                 i--;
             }
         }
+        for (MemoryBlock block: freeList) {
+            if(block.isFree) {
+                System.out.print("[Tick " + currentTime + "] Process " + p.pid);
+                System.out.println(" after coalesce start address " + block.startAddress + " size " + block.size);
+            }
+        }
+
     }
 
     @Override
@@ -83,7 +96,7 @@ public class ContiguousAllocation implements MemoryManagement{
             if(block.isFree) {
 
                 System.out.print("[Tick " + currentTime + "] Process " + p.pid);
-                System.out.println(" block Size " + block.size + " is insufficient.");
+                System.out.println(" block size " + block.size + " is insufficient.");
             }
         }
     }
