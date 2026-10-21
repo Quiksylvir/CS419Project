@@ -59,10 +59,10 @@ public class ContiguousAllocation implements MemoryManagement{
                 break;
             }
         }
-        coalesce(process, currentTime);
+        coalesce(currentTime);
     }
 
-    private void coalesce(Process p, int currentTime) {
+    private void coalesce(int currentTime) {
         boolean didCoalesce = false;
 
         for (int i = 0; i < freeList.size() - 1; i++) {
@@ -75,7 +75,7 @@ public class ContiguousAllocation implements MemoryManagement{
                 for (MemoryBlock block: freeList) {
                     if(block.isFree) {
                         System.out.print("[Tick " + currentTime + "] Memory");
-                        System.out.println(" before coalesce start address " + block.startAddress + " size " + block.size);
+                        System.out.println(" before coalesce [Start Address-" + block.startAddress + "] [Size-" + block.size +"]");
                     }
                 }
                 current.size += next.size;
@@ -87,7 +87,7 @@ public class ContiguousAllocation implements MemoryManagement{
         for (MemoryBlock block: freeList) {
             if(block.isFree) {
                 System.out.print("[Tick " + currentTime + "] Memory");
-                System.out.println(" after coalesce start address " + block.startAddress + " size " + block.size);
+                System.out.println(" after coalesce [Start Address-" + block.startAddress + "] [Size-" + block.size + "]");
             }
         }
         }
@@ -96,12 +96,14 @@ public class ContiguousAllocation implements MemoryManagement{
 
     @Override
     public void printMemory(int currentTime, Process p) {
-        System.out.println("[Tick " + currentTime + "] Process " + p.pid + " requires "  + p.memoryCost +" memory to be admitted: ");
+        System.out.println("[Tick " + currentTime + "] Process " + p.pid + " requires " +
+                "[Size-"  + p.memoryCost +"] memory to be admitted: ");
+
         for (MemoryBlock block: freeList) {
             if(block.isFree) {
 
                 System.out.print("[Tick " + currentTime + "] Process " + p.pid);
-                System.out.println(" block size " + block.size + " is insufficient.");
+                System.out.println(" Memory [Size-" + block.size + "] is insufficient.");
             }
         }
     }

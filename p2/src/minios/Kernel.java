@@ -45,7 +45,7 @@ public class Kernel {
     private static void declareMemoryAllocated(Process p, int currentTime) {
         if (p.baseAddress != null) {
             System.out.print("[Tick " + currentTime + "] Process " + p.pid);
-            System.out.println(" Starting memory address " + p.baseAddress + " block size " + p.memoryCost);
+            System.out.println(" [Start Address-" + p.baseAddress + "] [Size " + p.memoryCost + "]");
         } else {
             System.out.print("[Tick " + currentTime + "] Process " + p.pid);
             System.out.println(" Page Table:" + Arrays.toString(p.pageTable));
@@ -54,9 +54,9 @@ public class Kernel {
 
     // Called on every clock tick
     public void onClockTick(int currentTime) {
-        // check all processes currently waiting in I/O wait queue
         trackReadyQueueWaitTimes();
         trackMemoryQueueWaitTimes();
+        // check all processes currently waiting in I/O wait queue
         serviceIOWaitQueue(currentTime);
         boolean cpuCycleUsed = false;
         // Execute one CPU cycle
@@ -103,13 +103,11 @@ public class Kernel {
                     // instruction.
                     runningProcess.programCounter++;
                 }
-                if (runningProcess.getCurrentInstruction() != null) {
-                    if (quantumLeft == 0 && inst.remainingTicks != 0) {
-                        System.out.println("[Tick " + (currentTime + 1) + "] Process " + runningProcess.pid + " time quantum expired. Preempting.");
-                        runningProcess.state = Process.State.READY;
-                        algo.addProcess(readyQueue, runningProcess);
-                        runningProcess = null;
-                    }
+                if (quantumLeft == 0 && runningProcess.getCurrentInstruction() != null) {
+                    System.out.println("[Tick " + (currentTime + 1) + "] Process " + runningProcess.pid + " time quantum expired. Preempting.");
+                    runningProcess.state = Process.State.READY;
+                    algo.addProcess(readyQueue, runningProcess);
+                    runningProcess = null;
                 }
             }
 
@@ -178,6 +176,7 @@ public class Kernel {
             if (MemoryManager.allocate(process)) {
                 System.out.println("[Tick " + currentTime + "] Process " + process.pid + " can be admitted from memory queue.");
                 declareMemoryAllocated(process, currentTime);
+                readyQueueWaitTimes.put(process.pid, 0);
                 algo.addProcess(readyQueue, process);
                 iterator.remove();
             }

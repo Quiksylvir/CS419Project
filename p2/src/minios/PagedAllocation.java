@@ -62,7 +62,8 @@ public class PagedAllocation implements MemoryManagement{
                 freeFrames++;
             }
         }
-        System.out.println("[Tick " + currentTime + "] Process " + p.pid + " requires "  + (p.pageTable.length) +" frame(s) to be admitted: ");
+        System.out.println("[Tick " + currentTime + "] Process " + p.pid + " requires "  +
+                (p.pageTable.length) +" frame(s) to be admitted. ");
         System.out.print("[Tick " + currentTime + "] Process " + p.pid);
         System.out.println(" found " + freeFrames + " free frame(s).");
     }
