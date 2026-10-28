@@ -79,7 +79,7 @@ public class Simulator {
     }
 
     private static void startSim(SchedulingAlgo Algo, int quantum, int memoryModeFlag) throws IOException {
-        List<Process> universalWorkload = TraceParser.parseWorkload("workload.txt");
+        List<Process> universalWorkload = TraceParser.parseWorkload("code/workload.txt");
 
         System.out.println("\n\nSimulation START!");
         Kernel Kernel = new Kernel(Algo, quantum, memoryModeFlag);

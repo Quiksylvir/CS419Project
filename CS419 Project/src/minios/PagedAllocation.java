@@ -3,11 +3,15 @@ package minios;
 import java.util.Arrays;
 
 public class PagedAllocation implements MemoryManagement{
-
+    int[] physicalMemory;
     private final int[] frames;
+    private final int PAGE_SIZE = 10;
+
+
     public PagedAllocation(int memory) {
-        frames = new int[memory/10];
+        frames = new int[memory/PAGE_SIZE];
         initializeFrames();
+        this.physicalMemory = new int[memory];
     }
 
     private void initializeFrames() {
@@ -66,5 +70,47 @@ public class PagedAllocation implements MemoryManagement{
                 (p.pageTable.length) +" frame(s) to be admitted. ");
         System.out.print("[Tick " + currentTime + "] Process " + p.pid);
         System.out.println(" found " + freeFrames + " free frame(s).");
+    }
+
+    @Override
+    public int translate(Process process, int address) {
+        int pageNumber = address / PAGE_SIZE;
+        int offset = address % PAGE_SIZE;
+        int physicalMemoryByte;
+
+        if (translationErrorsExist(process, address, pageNumber)) {
+            return -1;
+        }
+
+        physicalMemoryByte = (process.pageTable[pageNumber] * PAGE_SIZE) + offset;
+        return physicalMemoryByte;
+    }
+
+    private boolean translationErrorsExist(Process process, int address, int pageNumber) {
+        if (address < 0 || address >= process.memoryCost) {
+            return true;
+        }
+        if (pageNumber >= process.pageTable.length) {
+            return true;
+        }
+        if (process.pageTable[pageNumber] == -1) {
+            return true;
+        }
+
+        return false;
+    }
+
+    @Override
+    public void store(int physicalAddress, int value) {
+        if (physicalAddress >= 0 && physicalAddress < physicalMemory.length) {
+            physicalMemory[physicalAddress] = value;
+        }
+    }
+    @Override
+    public int load(int physicalAddress) {
+        if (physicalAddress >= 0 && physicalAddress < physicalMemory.length) {
+            return physicalMemory[physicalAddress];
+        }
+        return 0;
     }
 }

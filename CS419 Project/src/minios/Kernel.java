@@ -64,7 +64,7 @@ public class Kernel {
         while (!cpuCycleUsed) {
             // No process currently running
             if (runningProcess == null) {
-                if (dispatchNextProcess(currentTime) == null){
+                if (dispatchNextProcess(currentTime) == null) {
                     // No more process to schedule; simulation finishes.
                     break;
                 }
@@ -76,33 +76,86 @@ public class Kernel {
             if (inst == null) {
                 System.out.println("[Tick " + currentTime + "] Process " + runningProcess.pid + " Terminates.");
                 terminateProcess(runningProcess, currentTime);
+                continue;
                 // In this case, no instruction is executed, so no CPU cycle
                 // is used. Can't advance the simulation clock. Loop
                 // back and grab the next process to execute.
             }
 
+            //Find out if we have cpu or io instruction
+            boolean isCpuInstruction = (inst.type == Instruction.OpType.COMPUTE ||
+                    inst.type == Instruction.OpType.STORE ||
+                    inst.type == Instruction.OpType.LOAD);
+
             // I/O instruction: process enters I/O and no longer uses CPU
             // (Assume this transition itself doesn't consume CPU cycles.)
-            else if (inst.type != Instruction.OpType.CPU) {
+            if (!isCpuInstruction) {
                 System.out.println("[Tick " + currentTime + "] Process " + runningProcess.pid + " enters I/O wait.");
                 runningProcess.state = Process.State.BLOCKED;
                 waitQueue.add(runningProcess);
                 runningProcess = null;
+                continue;
                 // Can't advance the simulation clock. Loop back
                 // and grab the next process to execute.
             }
 
             // CPU instruction: the instruction has not finished;
             // Utilize one CPU cycle
-            else if(inst.remainingTicks > 0){
+
+            // TO-DO:: ADD IN STORE AND LOAD.. THE UNDER FUNCTION WILL BE COMPUTE JUST RENAMED
+            if (inst.type == Instruction.OpType.STORE || inst.type == Instruction.OpType.LOAD) {
+                int virtualAddr = inst.address;
+                int physicalAddr = MemoryManager.translate(runningProcess, virtualAddr);
+
+                System.out.println("[Tick " + currentTime + "] Process " + runningProcess.pid +
+                        " [Virtual Address: " + virtualAddr + "] [Physical Address: " + physicalAddr + "]");
+
+                if (physicalAddr == -1) {
+                    cpuCycleUsed = true;
+                    quantumLeft--;
+
+                    System.out.println("[Tick " + currentTime + "] WARNING: Invalid address access by Process "
+                            + runningProcess.pid + " with instruction " + inst.type + " at Address " + virtualAddr);
+                    System.err.println("[Tick " + currentTime + "] WARNING: Invalid address access by Process "
+                            + runningProcess.pid + " with instruction " + inst.type + " at Address " + virtualAddr);
+
+                    terminateProcess(runningProcess, currentTime);
+                    return;
+                }
+
+                //Store Operation
+                if (inst.type == Instruction.OpType.STORE) {
+                    int valueToStore = inst.value;
+                    MemoryManager.store(physicalAddr, valueToStore);
+                    //Load Operation
+                } else if (inst.type == Instruction.OpType.LOAD) {
+                    int valueLoaded = MemoryManager.load(physicalAddr);
+                    System.out.println("[Tick " + currentTime + "] " + runningProcess.pid
+                            + " Value Loaded: " + valueLoaded);
+                }
+
+
+                cpuCycleUsed = true;
+                quantumLeft--;
+                runningProcess.programCounter++;
+
+                //NOT DOING RR2 FOR THIS ITERATION
+                if (quantumLeft == 0 && runningProcess.getCurrentInstruction() != null) {
+                    System.out.println("[Tick " + (currentTime + 1) + "] Process " + runningProcess.pid + " time quantum expired. Preempting.");
+                    runningProcess.state = Process.State.READY;
+                    algo.addProcess(readyQueue, runningProcess);
+                    runningProcess = null;
+                }
+            //Compute Operation
+            }  else if (inst.remainingTicks > 0) {
                 inst.remainingTicks--;
                 cpuCycleUsed = true;
                 quantumLeft--;
+
                 if (inst.remainingTicks == 0) {
-                    // The instruction now finishes; load the next
-                    // instruction.
                     runningProcess.programCounter++;
                 }
+
                 if (quantumLeft == 0 && runningProcess.getCurrentInstruction() != null) {
                     System.out.println("[Tick " + (currentTime + 1) + "] Process " + runningProcess.pid + " time quantum expired. Preempting.");
                     runningProcess.state = Process.State.READY;
@@ -110,11 +163,10 @@ public class Kernel {
                     runningProcess = null;
                 }
             }
-
             // CPU instruction: the instruction has finished
             // (should never come here as this is already handled above,
             // but just in case...)
-            else{
+            else {
                 runningProcess.programCounter++;
                 // Can't advance the simulation clock. Loop back
                 // and move to the next instruction.

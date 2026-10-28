@@ -38,8 +38,23 @@ public class TraceParser {
                     // initialize the instruction and add to the process's code block
                     String[] parts = line.split("\\s+");
                     Instruction.OpType type = Instruction.OpType.valueOf(parts[0].toUpperCase());
-                    int duration = Integer.parseInt(parts[1]);
-                    currentInstructions.add(new Instruction(type, duration));
+                    switch (type) {
+                        case COMPUTE:
+                        case IO:
+                            currentInstructions.add(new Instruction(type, Integer.parseInt(parts[1])));
+                            break;
+                        case LOAD:
+                            // LOAD doesn't have a value, so just use 0
+                            currentInstructions.add(new Instruction(type, Integer.parseInt(parts[1]), 0));
+                            break;
+                        case STORE:
+                            currentInstructions.add(new Instruction(type, Integer.parseInt(parts[1]),
+                                    Integer.parseInt(parts[2])));
+                            break;
+                    }
+                    //int duration = Integer.parseInt(parts[1]);
+                    //currentInstructions.add(new Instruction(type, duration));
+
                 }
             }
 
